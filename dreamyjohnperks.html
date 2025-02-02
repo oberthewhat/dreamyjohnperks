@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Ensure proper scaling on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dreamy John Perks</title>
+  <!-- Google Fonts for a modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    /* Base & dark/twilight theme styles */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      /* Dark gradient background with a dreamy feel */
+      background: linear-gradient(135deg, #0d1b2a, #1b263b);
+      background-size: cover;
+      color: #f1f1f1;
+      position: relative;
+      overflow-x: hidden;
+    }
+    /* A simple moon using a pseudo-element */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 80px;
+      height: 80px;
+      background: radial-gradient(circle, #fff, #bbb);
+      border-radius: 50%;
+      opacity: 0.8;
+      z-index: 1;
+    }
+    header {
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    header p {
+      margin: 5px 0 0;
+      font-size: 16px;
+    }
+    .container {
+      padding: 20px;
+      position: relative;
+      z-index: 2;
+    }
+    .points-display {
+      background-color: rgba(20, 20, 40, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .points-display h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .points-display p {
+      font-size: 32px;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    /* Perk Card Styles */
+    .perk-card {
+      background-color: rgba(30, 30, 50, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      padding: 15px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      position: relative;
+    }
+    .perk-card:hover {
+      background-color: rgba(40, 40, 60, 0.9);
+    }
+    .perk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .perk-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .toggle-icon {
+      font-size: 24px;
+      user-select: none;
+    }
+    .perk-details {
+      margin-top: 10px;
+      display: none;
+    }
+    .perk-item {
+      padding: 5px 0;
+      border-bottom: 1px solid #444;
+    }
+    .perk-item:last-child {
+      border-bottom: none;
+    }
+    .redeemed {
+      text-decoration: line-through;
+      color: #999;
+    }
+    /* Locked levels show their details always (blurred) */
+    .locked .perk-details {
+      display: block;
+      filter: blur(3px);
+    }
+    /* A translucent overlay for locked perk cards */
+    .lock-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+    footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+      color: #bbb;
+      position: relative;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dreamy John Perks</h1>
+    <p>For Jess Sacone</p>
+  </header>
+
+  <div class="container">
+    <!-- Points & current perk level display -->
+    <div class="points-display">
+      <h2>Total Points</h2>
+      <p id="points">0</p>
+      <h2>Current Level: <span id="currentLevel">None</span></h2>
+    </div>
+
+    <!-- Container for all perk cards -->
+    <div id="perkContainer"></div>
+  </div>
+
+  <footer>
+    built by John
+  </footer>
+
+  <script>
+    /********************************************************************
+     * 1. Define the perks object with ranges and placeholder awards.
+     *
+     * You can update these values on your back end as needed.
+     ********************************************************************/
+    const perkData = {
+      bronze: {
+        range: [5, 20],
+        perks: [
+          { title: "Free tickets to Six Flags", redeemed: false },
+          { title: "Free snack voucher", redeemed: false }
+        ]
+      },
+      silver: {
+        range: [25, 50],
+        perks: [
+          { title: "Free round of drinks", redeemed: false },
+          { title: "Discount at local cafe", redeemed: false }
+        ]
+      },
+      gold: {
+        range: [55, 80],
+        perks: [
+          { title: "VIP Event Invite", redeemed: false },
+          { title: "Exclusive merchandise", redeemed: false }
+        ]
+      },
+      platinum: {
+        range: [85, 115],
+        perks: [
+          { title: "Meet & Greet with John", redeemed: false },
+          { title: "Private tour", redeemed: false }
+        ]
+      },
+      hollywood: {
+        range: [120, Infinity],
+        perks: [
+          { title: "Star on the Walk of Fame", redeemed: false },
+          { title: "Red carpet experience", redeemed: false }
+        ]
+      }
+    };
+
+    /********************************************************************
+     * 2. Calculate the total points.
+     *
+     * Each dream is worth 5 points. (Jess has 1 dream = 5 points.)
+     ********************************************************************/
+    let dreamCount = 1; // Jess currently has 1 dream (5 points)
+    let totalPoints = dreamCount * 5;
+    document.getElementById('points').textContent = totalPoints;
+
+    /********************************************************************
+     * 3. Determine Jess’s current perk level based on total points.
+     ********************************************************************/
+    function getCurrentLevel(points) {
+      for (const level in perkData) {
+        const [min, max] = perkData[level].range;
+        if (points >= min && points <= max) {
+          return level;
+        }
+      }
+      return null;
+    }
+    const currentLevel = getCurrentLevel(totalPoints);
+    document.getElementById('currentLevel').textContent =
+      currentLevel ? currentLevel.charAt(0).toUpperCase() + currentLevel.slice(1) : "None";
+
+    /********************************************************************
+     * 4. Create perk cards for each level.
+     *
+     * Unlocked levels (if totalPoints >= level’s minimum) are clickable to
+     * toggle the perk details. Locked levels show the perk details blurred
+     * with a lock overlay and a message indicating how many more points are needed.
+     ********************************************************************/
+    const levelOrder = ['bronze', 'silver', 'gold', 'platinum', 'hollywood'];
+
+    function createPerkCard(level, unlocked) {
+      const card = document.createElement('div');
+      card.classList.add('perk-card');
+      if (!unlocked) {
+        card.classList.add('locked');
+      }
+      
+      // Create header with level name and points range
+      const header = document.createElement('div');
+      header.classList.add('perk-header');
+      const levelName = level.charAt(0).toUpperCase() + level.slice(1);
+      const [min, max] = perkData[level].range;
+      let rangeText = max === Infinity ? `${min}+ points` : `${min} - ${max} points`;
+      
+      const headerTitle = document.createElement('h3');
+      headerTitle.textContent = `${levelName} Perks (${rangeText})`;
+      header.appendChild(headerTitle);
+      
+      // For unlocked levels, add a toggle icon
+      if (unlocked) {
+        const toggleIcon = document.createElement('span');
+        toggleIcon.classList.add('toggle-icon');
+        toggleIcon.textContent = '+';
+        header.appendChild(toggleIcon);
+      }
+      card.appendChild(header);
+      
+      // If the level is locked, show a message indicating additional points needed
+      if (!unlocked) {
+        const lockedMsg = document.createElement('p');
+        lockedMsg.style.fontSize = '14px';
+        lockedMsg.style.color = '#bbb';
+        lockedMsg.style.margin = '5px 0 0';
+        const pointsNeeded = min - totalPoints;
+        lockedMsg.textContent = `Earn ${pointsNeeded} more point${pointsNeeded > 1 ? 's' : ''} to unlock`;
+        card.appendChild(lockedMsg);
+      }
+      
+      // Create the perk details list
+      const details = document.createElement('div');
+      details.classList.add('perk-details');
+      perkData[level].perks.forEach(perk => {
+        const perkItem = document.createElement('div');
+        perkItem.classList.add('perk-item');
+        perkItem.textContent = perk.title;
+        if (perk.redeemed) {
+          perkItem.classList.add('redeemed');
+        }
+        details.appendChild(perkItem);
+      });
+      // For unlocked levels, details are hidden initially; locked ones always show (blurred by CSS)
+      if (unlocked) {
+        details.style.display = 'none';
+      }
+      card.appendChild(details);
+      
+      // If locked, add a lock overlay to indicate the perk is not yet available
+      if (!unlocked) {
+        const lockOverlay = document.createElement('div');
+        lockOverlay.classList.add('lock-overlay');
+        lockOverlay.textContent = '🔒 Locked';
+        card.appendChild(lockOverlay);
+      }
+      
+      // Add toggle functionality for unlocked levels
+      if (unlocked) {
+        card.addEventListener('click', () => {
+          if (details.style.display === 'none') {
+            details.style.display = 'block';
+            header.querySelector('.toggle-icon').textContent = '-';
+          } else {
+            details.style.display = 'none';
+            header.querySelector('.toggle-icon').textContent = '+';
+          }
+        });
+      }
+      
+      return card;
+    }
+    
+    /********************************************************************
+     * 5. Render all perk cards.
+     ********************************************************************/
+    const perkContainer = document.getElementById('perkContainer');
+    levelOrder.forEach(level => {
+      // A level is "unlocked" if totalPoints is at least the minimum required.
+      const unlocked = totalPoints >= perkData[level].range[0];
+      const perkCard = createPerkCard(level, unlocked);
+      perkContainer.appendChild(perkCard);
+    });
+  </script>
+</body>
+</html>
